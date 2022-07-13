@@ -23,18 +23,21 @@ A3-4) VOS PODES REY, TENES TIEMPO Y UN VIDEO QUE SIRVE COMO GUIA. CHILL.
 #define TAMAÑO_LISTA (sizeof(char)*5)*30 // Cantidad de letras por palabra y cantidad de palabras en la lista, cambiar ultimo numero en caso de agregar o sacar palabras
 //  y el primero en caso de modificar el largo de cada palabra
 
-int empezarJuego(char[], int, int);
-void desglosarPalabra(char[], char[]);
-void randomPalabra(char[]);
+int empezarJuego(char[], int, int, char[][7]);
+void randomPalabra(char[], char[][7]);
+void comprobarPalabra(char[], char[][7]);
 
 int main()
 {
 	
-	int i = 0, cantPartidas = 8, partidaActual = 1, puntajeMaximo = 0, puntajeMinimo = 0, promedioPuntaje = 0;
-	char palabra[6];
-	
-	randomPalabra(palabra);
-	
+	int i = 0, cantPartidas = 8, puntajeMaximo = 0, puntajeMinimo = 0, promedioPuntaje = 0;
+	static int partidaActual = 1;
+	static char palabra[6]; 
+	static char palabrasUsadas[8][7]; //deberia de poner un tamaño mayor por las dudas a pesar de que se que "solo necesito 6", tuve q volver y aumentar el valor a 7 para agregar \n alfinal de todos.
+
+
+	randomPalabra(palabra, palabrasUsadas);
+
 	printf("Bienvenido a Wordle, cuantas partidas deseas jugar en tu sesion de juego?  ");
 	scanf("%d", &cantPartidas);
 
@@ -48,20 +51,17 @@ int main()
 
 	
 
-	/*desglosarPalabra(palabra, arrayLetras);*/
-
-	empezarJuego(palabra, cantPartidas, partidaActual);
+	empezarJuego(palabra, cantPartidas, partidaActual, palabrasUsadas);
 	
 
 	return 0;
 }
 
-int empezarJuego(char palabra[], int cantPartidas, int partidaActual) {
+int empezarJuego(char palabra[], int cantPartidas, int partidaActual, char palabrasUsadas[][7]) {
 
-	int i = 0, j = 0, k = 0, v = 0, zzz = 0, puntos = 5000, puntosTotales=0, finalizarSesion = 0, puntajeMaximo = 0, partidaMaxima = 0, puntajeMinimo = 50000, partidaMinima = 0, promedioPuntaje = 0, cantVictorias = 0, intentosCorrectos = 0;
-	char intento[6];
-	char salirAntes[3];
-
+	int i = 0, j = 0, k = 0, v = 0, q = 0, zzz = 0, puntos = 5000, contador = 0, puntosTotales = 0, historialPuntos[8], finalizarSesion = 0, puntajeMaximo = 0, partidaMaxima = 0, puntajeMinimo = 50000, partidaMinima = 0, promedioPuntaje = 0, cantVictorias = 0, intentosCorrectos = 0;
+	char intento[6], salirAntes[3];
+	
 	for (i = 0; i < cantPartidas; i++) { // Partida actual
 
 		
@@ -133,7 +133,7 @@ int empezarJuego(char palabra[], int cantPartidas, int partidaActual) {
 
 			if (v == 727 && j == 0) {
 
-				printf("\nAdivinaste la palabra en el primer intento!! Te mereces 10000 puntos.\n");
+				printf("\nAdivinaste la palabra en el primer intento!! Te mereces 10000 puntos extra.\n");
 				puntos = puntos + VICTORIA_PERFECTA;
 				intentosCorrectos = 0;		
 				cantVictorias++;
@@ -170,8 +170,10 @@ int empezarJuego(char palabra[], int cantPartidas, int partidaActual) {
 			
 		}
 			
+		historialPuntos[contador] = puntos;
 		puntosTotales = puntosTotales + puntos;
 		puntos = 5000;
+		contador++;
 
 		if (partidaActual != cantPartidas) {
 
@@ -185,22 +187,28 @@ int empezarJuego(char palabra[], int cantPartidas, int partidaActual) {
 		}
 
 		partidaActual++;
-		randomPalabra(palabra);
-
+		randomPalabra(palabra, palabrasUsadas);
+	
 	}
 
 
 	promedioPuntaje = puntosTotales / cantVictorias;
 	printf("\nTerminaste todas tus partidas, tu puntuacion total es de %d, tu cantidad de victorias es %d y tu promedio de puntos fue de: %d.\n", puntosTotales, cantVictorias, promedioPuntaje);
 	printf("Ademas, conseguiste tu puntuacion maxima de %dpts en tu partida nro %d y conseguiste tu puntuacion minima de %dpts en la partida nro %d.\n\n", puntajeMaximo, partidaMaxima, puntajeMinimo, partidaMinima);
+	printf("Por ultimo, te mostramos un historial de todas tus puntuaciones junto a la palabra de esa partida:\n");
 
+	for (q = 0; q < contador; q++) {
+
+		printf("La palabra numero %d fue %s y obtuviste un total de %dpts.\n", q+1, palabrasUsadas[q], historialPuntos[q]);
+
+	}
 	return 0;
 
 }
 
 
 
-void randomPalabra(char palabra[]) {
+void randomPalabra(char palabra[], char palabrasUsadas[][7]) {
 
 	int lineaActual = 0, lineaElegida = 0;
 	bool seguirLeyendo = true;
@@ -234,7 +242,29 @@ void randomPalabra(char palabra[]) {
 
 	}
 
+	comprobarPalabra(palabra, palabrasUsadas);
 	fclose(archivoTxt);
 
+
+}
+
+void comprobarPalabra(char palabra[], char palabrasUsadas[][7]) {
+
+	int i = 0, j = 0, k = 0;
+	static int totalPalabras = 0;
+	
+	for (j = 0; j < totalPalabras+1; j++) {
+
+		if (_stricmp(palabrasUsadas[j], palabra) == 0) {
+
+			printf("\nLa palabra era %s pero ya fue usada, buscaremos otra.\n", palabra);
+			randomPalabra(palabra, palabrasUsadas);
+		
+		}
+
+	}
+		
+	strcpy(palabrasUsadas[totalPalabras], palabra);
+	totalPalabras++;
 
 }
