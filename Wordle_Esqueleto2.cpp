@@ -26,6 +26,8 @@ A3-4) VOS PODES REY, TENES TIEMPO Y UN VIDEO QUE SIRVE COMO GUIA. CHILL.
 int empezarJuego(char[], int, int, char[][7]);
 void randomPalabra(char[], char[][7]);
 void comprobarPalabra(char[], char[][7]);
+int puntoLetraCorrecta(char, char[], bool);
+int puntoLetraCasi(char letra, char palabra[], bool);
 
 int main()
 {
@@ -59,8 +61,10 @@ int main()
 
 int empezarJuego(char palabra[], int cantPartidas, int partidaActual, char palabrasUsadas[][7]) {
 
-	int i = 0, j = 0, k = 0, v = 0, q = 0, zzz = 0, puntos = 5000, contador = 0, puntosTotales = 0, historialPuntos[8], finalizarSesion = 0, puntajeMaximo = 0, partidaMaxima = 0, puntajeMinimo = 50000, partidaMinima = 0, promedioPuntaje = 0, cantVictorias = 0, intentosCorrectos = 0;
+	int i = 0, j = 0, k = 0, v = 0, q = 0, zzz = 0, puntos = 5000, contador = 0, puntosTotales = 0, historialPuntos[8], finalizarSesion = 0;
+	int puntajeMaximo = 0, partidaMaxima = 0, puntajeMinimo = 50000, partidaMinima = 0, promedioPuntaje = 0, cantVictorias = 0, intentosCorrectos = 0;
 	char intento[6], salirAntes[3];
+	bool resetCorrecto = false, resetCasi = false;
 	
 	for (i = 0; i < cantPartidas; i++) { // Partida actual
 
@@ -79,12 +83,16 @@ int empezarJuego(char palabra[], int cantPartidas, int partidaActual, char palab
 
 					printf("Correcto ");
 					intentosCorrectos++;
+					puntos = puntos + puntoLetraCorrecta(palabra[k], palabra, resetCorrecto);
+					resetCorrecto = false;
 
 				}
 
 				if (tolower(palabra[k]) != tolower(intento[k]) && ( tolower(intento[k]) == tolower(palabra[0]) || tolower(intento[k]) == tolower(palabra[1]) || tolower(intento[k]) == tolower(palabra[2]) || tolower(intento[k]) == tolower(palabra[3]) || tolower(intento[k]) == tolower(palabra[4]) || tolower(intento[k]) == tolower(palabra[5])) ) {
 
 					printf("Casi ");
+					puntos = puntos + puntoLetraCasi(palabra[k], palabra, resetCasi);
+					resetCasi = false;
 					zzz = 1;
 
 				}
@@ -186,11 +194,15 @@ int empezarJuego(char palabra[], int cantPartidas, int partidaActual, char palab
 			}
 		}
 
+		resetCorrecto = true;
+		resetCasi = true;
 		partidaActual++;
 		randomPalabra(palabra, palabrasUsadas);
 	
 	}
 
+
+	//final juego, estadisticas y puntos.
 
 	promedioPuntaje = puntosTotales / cantVictorias;
 	printf("\nTerminaste todas tus partidas, tu puntuacion total es de %d, tu cantidad de victorias es %d y tu promedio de puntos fue de: %d.\n", puntosTotales, cantVictorias, promedioPuntaje);
@@ -207,7 +219,7 @@ int empezarJuego(char palabra[], int cantPartidas, int partidaActual, char palab
 }
 
 
-
+//generar palabra aleatoria para empezar la partida
 void randomPalabra(char palabra[], char palabrasUsadas[][7]) {
 
 	int lineaActual = 0, lineaElegida = 0;
@@ -248,9 +260,10 @@ void randomPalabra(char palabra[], char palabrasUsadas[][7]) {
 
 }
 
+//comprobar que la palabra seleccionada no haya sido usada en una partida anterior de la misma sesion
 void comprobarPalabra(char palabra[], char palabrasUsadas[][7]) {
 
-	int i = 0, j = 0, k = 0;
+	int j = 0;
 	static int totalPalabras = 0;
 	
 	for (j = 0; j < totalPalabras+1; j++) {
@@ -266,5 +279,79 @@ void comprobarPalabra(char palabra[], char palabrasUsadas[][7]) {
 		
 	strcpy(palabrasUsadas[totalPalabras], palabra);
 	totalPalabras++;
+
+}
+
+//100 puntos por poner la letra en el lugar que iba
+int puntoLetraCorrecta(char letra, char palabra[], bool reset) {
+
+	int i = 0, j = 0;
+	static int numLetras = 0;
+	static char letrasUsadas[7];
+	letrasUsadas[6] = '\0';
+
+	if (reset == true) {
+
+		numLetras = 0;
+		for (j = 0; j < 7 + 1; j++) {
+
+			letrasUsadas[j] = '\0'; // forma mas practica de vaciar el array que con un loop?
+
+		}
+
+	}
+
+	for (i = 0; i < 7 + 1; i++) {
+
+		if (strchr(letrasUsadas, letra) != NULL) {
+
+			return 0;
+		}
+		else if (strchr(letrasUsadas, letra) == NULL) {
+
+			letrasUsadas[numLetras] = letra;
+			numLetras++;
+			return 100;
+
+		}
+	}
+
+
+}
+
+//50 puntos por letra correcta pero que va en un lugar distinto.
+int puntoLetraCasi(char letra, char palabra[], bool reset) {
+
+	int i = 0, j = 0;
+	static int numLetras = 0;
+	static char letrasCasiUsadas[7];
+	letrasCasiUsadas[6] = '\0';
+
+	if (reset == true) {
+
+		numLetras = 0;
+		for (j = 0; j < 7 + 1; j++) {
+
+			letrasCasiUsadas[j] = '\0'; // forma mas practica de vaciar el array que con un loop?
+
+		}
+
+	}
+
+	for (i = 0; i < 7 + 1; i++) {
+
+		if (strchr(letrasCasiUsadas, letra) != NULL) {
+
+			return 0;
+		}
+		else if (strchr(letrasCasiUsadas, letra) == NULL) {
+
+			letrasCasiUsadas[numLetras] = letra;
+			numLetras++;
+			return 50;
+
+		}
+	}
+
 
 }
