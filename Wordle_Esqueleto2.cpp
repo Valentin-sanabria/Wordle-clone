@@ -26,15 +26,16 @@ A3-4) VOS PODES REY, TENES TIEMPO Y UN VIDEO QUE SIRVE COMO GUIA. CHILL.
 int empezarJuego(char[], int, int, char[][7]);
 void randomPalabra(char[], char[][7]);
 void comprobarPalabra(char[], char[][7]);
+void intento5chars(char[]);
 int puntoLetraCorrecta(char, char[], bool);
 int puntoLetraCasi(char letra, char palabra[], bool);
 
 int main()
 {
-	
+
 	int i = 0, cantPartidas = 8, puntajeMaximo = 0, puntajeMinimo = 0, promedioPuntaje = 0;
 	static int partidaActual = 1;
-	static char palabra[6]; 
+	static char palabra[6];
 	static char palabrasUsadas[8][7]; //deberia de poner un tamaño mayor por las dudas a pesar de que se que "solo necesito 6", tuve q volver y aumentar el valor a 7 para agregar \n alfinal de todos.
 
 
@@ -43,18 +44,18 @@ int main()
 	printf("Bienvenido a Wordle, cuantas partidas deseas jugar en tu sesion de juego?  ");
 	scanf("%d", &cantPartidas);
 
-	while (cantPartidas > 8){
+	while (cantPartidas > 8 || cantPartidas < 1) {
 
-		printf("\nLo sentimos, el maximo de partidas por sesion de juegos es 8 :( \nIngresa una nueva cantidad igual o menor a 8:  ");
+		printf("\nLo sentimos, el numero de partidas por sesion tiene que estar entre 1 y 8 :( \nIngresa un numero dentro del rango:  ");
 		scanf("%d", &cantPartidas);
 	}
 
 	printf("\nGenial! Empecemos.");
 
-	
+
 
 	empezarJuego(palabra, cantPartidas, partidaActual, palabrasUsadas);
-	
+
 
 	return 0;
 }
@@ -65,18 +66,19 @@ int empezarJuego(char palabra[], int cantPartidas, int partidaActual, char palab
 	int puntajeMaximo = 0, partidaMaxima = 0, puntajeMinimo = 50000, partidaMinima = 0, promedioPuntaje = 0, cantVictorias = 0, intentosCorrectos = 0;
 	char intento[6], salirAntes[3];
 	bool resetCorrecto = false, resetCasi = false;
-	
+
 	for (i = 0; i < cantPartidas; i++) { // Partida actual
 
-		
+
 		printf("\nPartida Nro %d de %d.\n", partidaActual, cantPartidas);
 		printf("La palabra es %s\n", palabra);
 
 		for (j = 0; j < 6; j++) { // Intento actual.
 
 			printf("\nIngrese su intento:  ");
-			scanf("%s", &intento);
-
+			scanf("%s", &intento); 
+			intento5chars(intento);
+	
 			for (k = 0; k < 5; k++) { // Comparar letras de la palabra con letras del intento
 
 				if ( tolower(palabra[k]) == tolower(intento[k]) ) {
@@ -192,6 +194,15 @@ int empezarJuego(char palabra[], int cantPartidas, int partidaActual, char palab
 
 				i = (cantPartidas - 1);
 			}
+
+			if (_stricmp(salirAntes, "Si") != 0 && _stricmp(salirAntes, "No") != 0) {
+				do {
+
+					printf("\nIngresaste una respuesta invalida. Deseas salir antes de tiempo? Ingresa si o no.\n");
+					scanf("%s", &salirAntes);
+
+				} while (_stricmp(salirAntes, "Si") != 0 && _stricmp(salirAntes, "No") != 0);
+			}
 		}
 
 		resetCorrecto = true;
@@ -293,7 +304,7 @@ int puntoLetraCorrecta(char letra, char palabra[], bool reset) {
 	if (reset == true) {
 
 		numLetras = 0;
-		for (j = 0; j < 7 + 1; j++) {
+		for (j = 0; j < 6 + 1; j++) {
 
 			letrasUsadas[j] = '\0'; // forma mas practica de vaciar el array que con un loop?
 
@@ -330,7 +341,7 @@ int puntoLetraCasi(char letra, char palabra[], bool reset) {
 	if (reset == true) {
 
 		numLetras = 0;
-		for (j = 0; j < 7 + 1; j++) {
+		for (j = 0; j < 6 + 1; j++) {
 
 			letrasCasiUsadas[j] = '\0'; // forma mas practica de vaciar el array que con un loop?
 
@@ -353,5 +364,20 @@ int puntoLetraCasi(char letra, char palabra[], bool reset) {
 		}
 	}
 
+
+}
+
+//Se asegura que el input de usuario SIEMPRE sea 5 caracteres, ni mas ni menos.
+void intento5chars(char intento[]) {
+
+	if (strlen(intento) != 5) {
+
+		while (strlen(intento) != 5) {
+
+			printf("\nRecordá que todas las palabras de Wordle tienen 5 letras y la palabra que usaste tiene %d! Volve a intentar: ", strlen(intento));
+			scanf("%s", intento);
+
+		}
+	}
 
 }
